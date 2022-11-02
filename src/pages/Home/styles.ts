@@ -51,6 +51,10 @@ const BaseInput = styled.input`
 
 export const TaskInput = styled(BaseInput)`
   flex: 1; /* permite que o componente cresça para ocupar o espaço disponível, irá diminuir quando reduzir a tela*/
+
+  &::-webkit-calendar-picker-indicator {
+    display: none !important;
+  }
 `
 
 export const MinutesAmoutInput = styled(BaseInput)`

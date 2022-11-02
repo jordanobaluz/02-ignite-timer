@@ -15,10 +15,27 @@ export function Home() {
       <form action="">
         <FormContainer>
           <label htmlFor="task">Vou trabalhar em</label>
-          <TaskInput id="task" placeholder="Dê um nome para o seu projeto" />
+          <TaskInput
+            id="task"
+            list="task-suggestions"
+            placeholder="Dê um nome para o seu projeto"
+          />
+
+          {/* lista de sugestões para input */}
+          <datalist id="task-suggestions">
+            <option value="Projeto 1"></option>
+            <option value="Projeto 2"></option>
+          </datalist>
 
           <label htmlFor="minutesAmout">durante</label>
-          <MinutesAmoutInput type="number" id="minutesAmout" placeholder="00" />
+          <MinutesAmoutInput
+            type="number"
+            id="minutesAmout"
+            placeholder="00"
+            step={5} /* pula de 5 em 5 ao clicar */
+            min={5}
+            max={60}
+          />
           <span>minutos.</span>
         </FormContainer>
 
