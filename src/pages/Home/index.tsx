@@ -25,13 +25,27 @@ const newCycleFormValidationSchema = zod.object({
   minutesAmount: zod.number().min(5).max(60),
 })
 
+// interface NewCycleFormData {
+//   task: string
+//   minutesAmout: number
+// }
+// quando criar tipagem a partir de outra referência, melhor usar type
+type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
+// está sendo feito uma interface de forma automatica utilizando zod
+
 export function Home() {
-  const { register, handleSubmit, watch } = useForm({
+  const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFormValidationSchema),
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
   })
   // register recebe nome do input e retorna metodos para trabalhar com input
   function handleCreateNewCycle(data: any) {
     console.log(data)
+    // limpa os campos, voltando os valores que estão definidos em defaultValues
+    reset()
   }
 
   // observa se taskInput foi preenchido para habilitar StartCountdownButton
@@ -65,7 +79,7 @@ export function Home() {
             step={5} /* pula de 5 em 5 ao clicar */
             min={5}
             max={60}
-            {...register('minutesAmout', { valueAsNumber: true })}
+            {...register('minutesAmount', { valueAsNumber: true })}
           />
           <span>minutos.</span>
         </FormContainer>
