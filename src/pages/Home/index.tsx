@@ -12,6 +12,7 @@ import {
   StartCountdownButton,
   TaskInput,
 } from './styles'
+import { useState } from 'react'
 
 /*
 controlled - mantem em tempo real a informação do input guardada no estado
@@ -33,7 +34,19 @@ const newCycleFormValidationSchema = zod.object({
 type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
 // está sendo feito uma interface de forma automatica utilizando zod
 
+// define o formato dos ciclos, que é adicionado
+interface Cycle {
+  id: string
+  task: string
+  minutesAmout: number
+}
+
 export function Home() {
+  // armazena uma lista de ciclos com o generic do ts
+  const [cycles, setCycles] = useState<Cycle[]>([])
+  // armazena os ciclos ativos
+  const [activeCycleId, setActiveCycleId] = useState<string | boolean>(null)
+
   const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFormValidationSchema),
     defaultValues: {
@@ -43,10 +56,27 @@ export function Home() {
   })
   // register recebe nome do input e retorna metodos para trabalhar com input
   function handleCreateNewCycle(data: any) {
-    console.log(data)
+    const id = String(new Date().getTime())
+
+    const newCycle: Cycle = {
+      id,
+      task: data.task,
+      minutesAmout: data.minutesAmout,
+    }
+
+    // copia todos os ciclos que já tem e adiciona o novo no final
+    // sempre que uma alteração de estado depender de um valor anterior, utilizar em formato de arrow
+    setCycles((state) => [...state, newCycle])
+    // quando se cria um novo ciclo, seta o ciclo recem criado como activo
+    setActiveCycleId(id)
     // limpa os campos, voltando os valores que estão definidos em defaultValues
     reset()
   }
+
+  // percorre e procura os ciclos que estão ativos
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+
+  console.log(activeCycle)
 
   // observa se taskInput foi preenchido para habilitar StartCountdownButton
   const task = watch('task')
