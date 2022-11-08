@@ -45,7 +45,9 @@ export function Home() {
   // armazena uma lista de ciclos com o generic do ts
   const [cycles, setCycles] = useState<Cycle[]>([])
   // armazena os ciclos ativos
-  const [activeCycleId, setActiveCycleId] = useState<string | boolean>(null)
+  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+  // armazena os segundos que passaram desde que foi criado o ciclo
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
   const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFormValidationSchema),
@@ -55,13 +57,13 @@ export function Home() {
     },
   })
   // register recebe nome do input e retorna metodos para trabalhar com input
-  function handleCreateNewCycle(data: any) {
+  function handleCreateNewCycle(data: NewCycleFormData) {
     const id = String(new Date().getTime())
 
     const newCycle: Cycle = {
       id,
       task: data.task,
-      minutesAmout: data.minutesAmout,
+      minutesAmout: data.minutesAmount,
     }
 
     // copia todos os ciclos que já tem e adiciona o novo no final
@@ -76,7 +78,15 @@ export function Home() {
   // percorre e procura os ciclos que estão ativos
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
-  console.log(activeCycle)
+  const totalSeconds = activeCycle ? activeCycle.minutesAmout * 60 : 0
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
+  // armazena os minutos e segundos que restam
+  const minutesAmout = Math.floor(currentSeconds / 60)
+  const secondsAmout = currentSeconds % 60
+
+  // preenche os minutos com até 2 caracteres, se não tiver preencher com 0
+  const minutes = String(minutesAmout).padStart(2, '0')
+  const seconds = String(secondsAmout).padStart(2, '0')
 
   // observa se taskInput foi preenchido para habilitar StartCountdownButton
   const task = watch('task')
@@ -115,11 +125,11 @@ export function Home() {
         </FormContainer>
 
         <CountdownContainer>
-          <span>0</span>
-          <span>0</span>
+          <span>{minutes[0]}</span>
+          <span>{minutes[1]}</span>
           <Separator>:</Separator>
-          <span>0</span>
-          <span>0</span>
+          <span>{seconds[0]}</span>
+          <span>{seconds[1]}</span>
         </CountdownContainer>
 
         <StartCountdownButton disabled={isSubmitDisabled} type="submit">
