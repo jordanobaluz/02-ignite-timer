@@ -12,7 +12,9 @@ import {
   StartCountdownButton,
   TaskInput,
 } from './styles'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import { differenceInSeconds } from 'date-fns'
 
 /*
 controlled - mantem em tempo real a informação do input guardada no estado
@@ -39,6 +41,7 @@ interface Cycle {
   id: string
   task: string
   minutesAmout: number
+  startDate: Date // armazena a data que foi ativo para saber quanto tempo passou
 }
 
 export function Home() {
@@ -64,6 +67,7 @@ export function Home() {
       id,
       task: data.task,
       minutesAmout: data.minutesAmount,
+      startDate: new Date(),
     }
 
     // copia todos os ciclos que já tem e adiciona o novo no final
@@ -77,6 +81,18 @@ export function Home() {
 
   // percorre e procura os ciclos que estão ativos
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+
+  // monitora o ciclo ativo para ativar o timer quando clicado no button
+  useEffect(() => {
+    if (activeCycle) {
+      setInterval(() => {
+        setAmountSecondsPassed(
+          // usar sempre data nova no primeiro parametro
+          differenceInSeconds(new Date(), activeCycle.startDate),
+        )
+      }, 1000)
+    }
+  }, [activeCycle])
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmout * 60 : 0
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
