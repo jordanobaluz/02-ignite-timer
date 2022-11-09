@@ -75,6 +75,8 @@ export function Home() {
     setCycles((state) => [...state, newCycle])
     // quando se cria um novo ciclo, seta o ciclo recem criado como activo
     setActiveCycleId(id)
+    // para evitar o bug do timer começar nos segundos do timer anterior
+    setAmountSecondsPassed(0)
     // limpa os campos, voltando os valores que estão definidos em defaultValues
     reset()
   }
@@ -84,13 +86,20 @@ export function Home() {
 
   // monitora o ciclo ativo para ativar o timer quando clicado no button
   useEffect(() => {
+    let interval: number
+
     if (activeCycle) {
-      setInterval(() => {
+      interval = setInterval(() => {
         setAmountSecondsPassed(
           // usar sempre data nova no primeiro parametro
           differenceInSeconds(new Date(), activeCycle.startDate),
         )
       }, 1000)
+    }
+
+    // serve para resetar o que estava sendo feito no useEffect anteriormente
+    return () => {
+      clearInterval(interval)
     }
   }, [activeCycle])
 
@@ -103,6 +112,13 @@ export function Home() {
   // preenche os minutos com até 2 caracteres, se não tiver preencher com 0
   const minutes = String(minutesAmout).padStart(2, '0')
   const seconds = String(secondsAmout).padStart(2, '0')
+
+  // exibe o timer no titulo da aba, para quando trocar de aba continuar acompanhando o timer
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds}`
+    }
+  }, [minutes, seconds, activeCycle])
 
   // observa se taskInput foi preenchido para habilitar StartCountdownButton
   const task = watch('task')
