@@ -26,7 +26,7 @@ schema - definir um formato e validar os dados por esse formato
 const newCycleFormValidationSchema = zod.object({
   // valida se taskInput foi preenchido com no min 1 caractere
   task: zod.string().min(1, 'Informe a tarefa'),
-  minutesAmount: zod.number().min(5).max(60),
+  minutesAmount: zod.number().min(1).max(60),
 })
 
 // interface NewCycleFormData {
@@ -44,6 +44,7 @@ interface Cycle {
   minutesAmout: number
   startDate: Date // armazena a data que foi ativo para saber quanto tempo passou
   interruptedDate?: Date // armazena data que foi interrompido manualmente o ciclo
+  finishedDate?: Date
 }
 
 export function Home() {
@@ -85,6 +86,7 @@ export function Home() {
 
   // percorre e procura os ciclos que estão ativos
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+  const totalSeconds = activeCycle ? activeCycle.minutesAmout * 60 : 0
 
   // monitora o ciclo ativo para ativar o timer quando clicado no button
   useEffect(() => {
@@ -92,10 +94,28 @@ export function Home() {
 
     if (activeCycle) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(
-          // usar sempre data nova no primeiro parametro
-          differenceInSeconds(new Date(), activeCycle.startDate),
+        // usar sempre data nova no primeiro parametro
+        const secondsDifference = differenceInSeconds(
+          new Date(),
+          activeCycle.startDate,
         )
+        // se houver diferença é atualizado e salvo a data que foi finalizado
+        if (secondsDifference >= totalSeconds) {
+          setCycles((state) =>
+            state.map((cycle) => {
+              if (cycle.id === activeCycleId) {
+                return { ...cycle, finishedDate: new Date() }
+              } else {
+                return cycle
+              }
+            }),
+          )
+          // para zerar os segundos quando finalizar o timer
+          setAmountSecondsPassed(totalSeconds)
+          clearInterval(interval)
+        } else {
+          setAmountSecondsPassed(secondsDifference)
+        }
       }, 1000)
     }
 
@@ -103,12 +123,12 @@ export function Home() {
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycle])
+  }, [activeCycle, totalSeconds, activeCycleId])
 
   function handleInterruptCycle() {
     // anota dentro do ciclo se foi interrompido, para ter no historico
-    setCycles(
-      cycles.map((cycle) => {
+    setCycles((state) =>
+      state.map((cycle) => {
         if (cycle.id === activeCycleId) {
           return { ...cycle, interruptedDate: new Date() }
         } else {
@@ -119,7 +139,6 @@ export function Home() {
     setActiveCycleId(null)
   }
 
-  const totalSeconds = activeCycle ? activeCycle.minutesAmout * 60 : 0
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
   // armazena os minutos e segundos que restam
   const minutesAmout = Math.floor(currentSeconds / 60)
@@ -168,7 +187,7 @@ export function Home() {
             id="minutesAmout"
             placeholder="00"
             step={5} /* pula de 5 em 5 ao clicar */
-            min={5}
+            min={1}
             max={60}
             disabled={!!activeCycle} // !! converte para boolean
             {...register('minutesAmount', { valueAsNumber: true })}
