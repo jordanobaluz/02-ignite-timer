@@ -1,20 +1,13 @@
 import { differenceInSeconds } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
+import { CyclesContext } from '../..'
 import { CountdownContainer, Separator } from './styles'
 
 /* Prop Drilling -> muitas propriedades apenas para comunicação entre componentes */
 
-interface CountdownProps {
-  activeCycle: any
-  setCycles: any
-  activeCycleId: any
-}
-
-export function CountDown({
-  activeCycle,
-  setCycles,
-  activeCycleId,
-}: CountdownProps) {
+export function CountDown() {
+  const { activeCycle, activeCycleId, markCurrentCycleAsFinished } =
+    useContext(CyclesContext)
   // armazena os segundos que passaram desde que foi criado o ciclo
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
@@ -33,15 +26,7 @@ export function CountDown({
         )
         // se houver diferença é atualizado e salvo a data que foi finalizado
         if (secondsDifference >= totalSeconds) {
-          setCycles((state) =>
-            state.map((cycle) => {
-              if (cycle.id === activeCycleId) {
-                return { ...cycle, finishedDate: new Date() }
-              } else {
-                return cycle
-              }
-            }),
-          )
+          markCurrentCycleAsFinished()
           // para zerar os segundos quando finalizar o timer
           setAmountSecondsPassed(totalSeconds)
           clearInterval(interval)
@@ -55,7 +40,23 @@ export function CountDown({
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycle, totalSeconds, activeCycleId])
+  }, [activeCycle, totalSeconds, activeCycleId, markCurrentCycleAsFinished])
+
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
+  // armazena os minutos e segundos que restam
+  const minutesAmout = Math.floor(currentSeconds / 60)
+  const secondsAmout = currentSeconds % 60
+
+  // preenche os minutos com até 2 caracteres, se não tiver preencher com 0
+  const minutes = String(minutesAmout).padStart(2, '0')
+  const seconds = String(secondsAmout).padStart(2, '0')
+
+  // exibe o timer no titulo da aba, para quando trocar de aba continuar acompanhando o timer
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds}`
+    }
+  }, [minutes, seconds, activeCycle])
 
   return (
     <CountdownContainer>
