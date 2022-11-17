@@ -104,6 +104,9 @@ export function Home() {
 
   /* Prop Drilling -> MUITAS propriedades APENAS para comunicação entre componentes
     Context API -> Permite compartilhar informações entre vários componentes ao mesmo tempo
+    createContext -> Permite criar variaveis que serão compartilhadas entre os componentes
+    useContext -> Permite manipular a variavel de contexto, que geralmente é criada como objeto
+    Variavel de estado -> Necessária quando trabalhar com váriaveis que precisam ser alteradas via contexto
   */
 
   return (
