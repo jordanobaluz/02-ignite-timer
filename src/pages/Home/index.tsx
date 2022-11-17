@@ -13,7 +13,7 @@ import {
   StopCountdownButton,
   TaskInput,
 } from './styles'
-import { useEffect, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 
 import { differenceInSeconds } from 'date-fns'
 import { NewCycleForm } from './components/NewCycleForm'
@@ -35,11 +35,31 @@ interface Cycle {
   finishedDate?: Date
 }
 
+// define o tipo das informações que serão passadas por contexto
+interface CyclesContextTypes {
+  activeCycle: Cycle | undefined
+  activeCycleId: string | null
+  markCurrentCycleAsFinished: () => void
+}
+export const CyclesContext = createContext({} as CyclesContextTypes)
+
 export function Home() {
   // armazena uma lista de ciclos com o generic do ts
   const [cycles, setCycles] = useState<Cycle[]>([])
   // armazena os ciclos ativos
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+
+  function markCurrentCycleAsFinished() {
+    setCycles((state) =>
+      state.map((cycle) => {
+        if (cycle.id === activeCycleId) {
+          return { ...cycle, finishedDate: new Date() }
+        } else {
+          return cycle
+        }
+      }),
+    )
+  }
 
   // register recebe nome do input e retorna metodos para trabalhar com input
   function handleCreateNewCycle(data: NewCycleFormData) {
@@ -80,22 +100,6 @@ export function Home() {
     setActiveCycleId(null)
   }
 
-  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
-  // armazena os minutos e segundos que restam
-  const minutesAmout = Math.floor(currentSeconds / 60)
-  const secondsAmout = currentSeconds % 60
-
-  // preenche os minutos com até 2 caracteres, se não tiver preencher com 0
-  const minutes = String(minutesAmout).padStart(2, '0')
-  const seconds = String(secondsAmout).padStart(2, '0')
-
-  // exibe o timer no titulo da aba, para quando trocar de aba continuar acompanhando o timer
-  useEffect(() => {
-    if (activeCycle) {
-      document.title = `${minutes}:${seconds}`
-    }
-  }, [minutes, seconds, activeCycle])
-
   // observa se taskInput foi preenchido para habilitar StartCountdownButton
   const task = watch('task')
   const isSubmitDisabled = !task
@@ -112,12 +116,12 @@ export function Home() {
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
-        <NewCycleForm />
-        <CountDown
-          activeCycle={activeCycle}
-          setCycles={setCycles}
-          activeCycleId={activeCycleId}
-        />
+        <CyclesContext.Provider
+          value={{ activeCycle, activeCycleId, markCurrentCycleAsFinished }}
+        >
+          <NewCycleForm />
+          <CountDown />
+        </CyclesContext.Provider>
         {activeCycle ? (
           <StopCountdownButton onClick={handleInterruptCycle} type="button">
             <HandPalm size={24} />
