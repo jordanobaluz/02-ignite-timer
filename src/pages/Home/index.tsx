@@ -1,21 +1,16 @@
 import { HandPalm, Play } from 'phosphor-react'
-import { useForm } from 'react-hook-form'
+import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import * as zod from 'zod'
 
 // usar esse metodo de importação somente quando lib não tiver export default
 import {
-  CountdownContainer,
-  FormContainer,
   HomeContainer,
-  MinutesAmoutInput,
-  Separator,
   StartCountdownButton,
   StopCountdownButton,
-  TaskInput,
 } from './styles'
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useState } from 'react'
 
-import { differenceInSeconds } from 'date-fns'
 import { NewCycleForm } from './components/NewCycleForm'
 import { CountDown } from './components/CountDown'
 
@@ -39,15 +34,39 @@ interface Cycle {
 interface CyclesContextTypes {
   activeCycle: Cycle | undefined
   activeCycleId: string | null
+  amountSecondsPassed: number
   markCurrentCycleAsFinished: () => void
+  setSecondsPassed: (seconds: number) => void
 }
 export const CyclesContext = createContext({} as CyclesContextTypes)
+
+const newCycleFormValidationSchema = zod.object({
+  // valida se taskInput foi preenchido com no min 1 caractere
+  task: zod.string().min(1, 'Informe a tarefa'),
+  minutesAmount: zod.number().min(1).max(60),
+})
+
+// quando criar tipagem a partir de outra referência, melhor usar type
+type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
+// está sendo feito uma interface de forma automatica utilizando zod
 
 export function Home() {
   // armazena uma lista de ciclos com o generic do ts
   const [cycles, setCycles] = useState<Cycle[]>([])
   // armazena os ciclos ativos
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+  // armazena os segundos que passaram desde que foi criado o ciclo
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
+
+  const newCycleForm = useForm<NewCycleFormData>({
+    resolver: zodResolver(newCycleFormValidationSchema),
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
+  })
+
+  const { handleSubmit, watch, reset } = newCycleForm
 
   function markCurrentCycleAsFinished() {
     setCycles((state) =>
@@ -86,6 +105,10 @@ export function Home() {
   // percorre e procura os ciclos que estão ativos
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
+  function setSecondsPassed(seconds: number) {
+    setAmountSecondsPassed(seconds)
+  }
+
   function handleInterruptCycle() {
     // anota dentro do ciclo se foi interrompido, para ter no historico
     setCycles((state) =>
@@ -111,15 +134,25 @@ export function Home() {
     createContext -> Permite criar variaveis que serão compartilhadas entre os componentes
     useContext -> Permite manipular a variavel de contexto, que geralmente é criada como objeto
     Variavel de estado -> Necessária quando trabalhar com váriaveis que precisam ser alteradas via contexto
+    Por padrão a preferencia é passagem por propriedades e não contexto
   */
 
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
         <CyclesContext.Provider
-          value={{ activeCycle, activeCycleId, markCurrentCycleAsFinished }}
+          value={{
+            activeCycle,
+            activeCycleId,
+            markCurrentCycleAsFinished,
+            amountSecondsPassed,
+            setSecondsPassed,
+          }}
         >
-          <NewCycleForm />
+          {/* Esse provider precisa estar por volta do componente que irá usar useFormContext */}
+          <FormProvider {...newCycleForm}>
+            <NewCycleForm />
+          </FormProvider>
           <CountDown />
         </CyclesContext.Provider>
         {activeCycle ? (
