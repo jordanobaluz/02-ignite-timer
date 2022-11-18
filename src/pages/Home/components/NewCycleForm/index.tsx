@@ -1,7 +1,7 @@
 import { FormContainer, MinutesAmoutInput, TaskInput } from './styles'
 import { useFormContext } from 'react-hook-form'
 import { useContext } from 'react'
-import { CyclesContext } from '../..'
+import { CyclesContext } from '../../../../context/CyclesContext'
 
 /* Prop Drilling -> muitas propriedades apenas para comunicação entre componentes */
 
