@@ -1,32 +1,19 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { FormContainer, MinutesAmoutInput, TaskInput } from './styles'
-import * as zod from 'zod'
-import { useForm } from 'react-hook-form'
+import { useFormContext } from 'react-hook-form'
+import { useContext } from 'react'
+import { CyclesContext } from '../..'
 
 /* Prop Drilling -> muitas propriedades apenas para comunicação entre componentes */
-
-const newCycleFormValidationSchema = zod.object({
-  // valida se taskInput foi preenchido com no min 1 caractere
-  task: zod.string().min(1, 'Informe a tarefa'),
-  minutesAmount: zod.number().min(1).max(60),
-})
 
 // interface NewCycleFormData {
 //   task: string
 //   minutesAmout: number
 // }
-// quando criar tipagem a partir de outra referência, melhor usar type
-type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
-// está sendo feito uma interface de forma automatica utilizando zod
 
 export function NewCycleForm() {
-  const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
-    resolver: zodResolver(newCycleFormValidationSchema),
-    defaultValues: {
-      task: '',
-      minutesAmount: 0,
-    },
-  })
+  const { activeCycle } = useContext(CyclesContext)
+  const { register } = useFormContext()
+
   return (
     <FormContainer>
       <label htmlFor="task">Vou trabalhar em</label>
