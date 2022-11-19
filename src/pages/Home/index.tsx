@@ -42,11 +42,18 @@ export function Home() {
     },
   })
 
-  const { handleSubmit, watch /* reset */ } = newCycleForm
+  const { handleSubmit, watch, reset } = newCycleForm
 
   // observa se taskInput foi preenchido para habilitar StartCountdownButton
   const task = watch('task')
   const isSubmitDisabled = !task
+
+  // aqui está com handle pois será chamada diretamente em um evento, chamando o evento passado por contexto sem gerar novos contextos desnecessários com o metodo reset
+  function handleCreateNewCycle(data: NewCycleFormData) {
+    createNewCycle(data)
+    // limpa os campos, voltando os valores que estão definidos em defaultValues
+    reset()
+  }
 
   /* Prop Drilling -> MUITAS propriedades APENAS para comunicação entre componentes
     Context API -> Permite compartilhar informações entre vários componentes ao mesmo tempo
@@ -58,7 +65,7 @@ export function Home() {
 
   return (
     <HomeContainer>
-      <form onSubmit={handleSubmit(createNewCycle)} action="">
+      <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
         {/* Esse provider precisa estar por volta do componente que irá usar useFormContext */}
         <FormProvider {...newCycleForm}>
           <NewCycleForm />

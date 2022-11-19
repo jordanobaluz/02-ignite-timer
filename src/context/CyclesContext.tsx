@@ -81,8 +81,6 @@ export function CyclesContextProvider({
     setActiveCycleId(id)
     // para evitar o bug do timer começar nos segundos do timer anterior
     setAmountSecondsPassed(0)
-    // limpa os campos, voltando os valores que estão definidos em defaultValues
-    // reset()
   }
 
   function interruptCurrentCycle() {
