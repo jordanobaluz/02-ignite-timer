@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useState } from 'react'
+import { createContext, ReactNode, useReducer, useState } from 'react'
 
 interface CreateCycleData {
   task: string
@@ -38,7 +38,18 @@ export function CyclesContextProvider({
   children,
 }: CyclesContextProviderProps) {
   // armazena uma lista de ciclos com o generic do ts
-  const [cycles, setCycles] = useState<Cycle[]>([])
+  // const [cycles, setCycles] = useState<Cycle[]>([])
+
+  // state - valor atual, em tempo real | action - ação que o usuário está querendo fazer
+  // dispatch - metodo para disparar action e não mais alterar o valor de cycles
+  // a função passada no reducer vira um ponto central, onde consigo manipular as ações realizadas
+  // onde é feito a distinção através do type passado pelo dispatch e assim filtrando qual ação será realizada
+  const [cycles, dispatch] = useReducer((state: Cycle[], action: any) => {
+    if (action.type === 'ADD_NEW_CYCLE') {
+      return [...state, action.payload.newCycle]
+    }
+    return state
+  }, [])
   // armazena os ciclos ativos
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
   // armazena os segundos que passaram desde que foi criado o ciclo
@@ -52,15 +63,21 @@ export function CyclesContextProvider({
   }
 
   function markCurrentCycleAsFinished() {
-    setCycles((state) =>
-      state.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, finishedDate: new Date() }
-        } else {
-          return cycle
-        }
-      }),
-    )
+    dispatch({
+      type: 'MARK_CURRENT_CYCLE_AS_FINISHED',
+      payload: {
+        activeCycleId,
+      },
+    })
+    // setCycles((state) =>
+    //   state.map((cycle) => {
+    //     if (cycle.id === activeCycleId) {
+    //       return { ...cycle, finishedDate: new Date() }
+    //     } else {
+    //       return cycle
+    //     }
+    //   }),
+    // )
   }
 
   // register recebe nome do input e retorna metodos para trabalhar com input
@@ -74,9 +91,16 @@ export function CyclesContextProvider({
       startDate: new Date(),
     }
 
+    dispatch({
+      type: 'ADD_NEW_CYCLE',
+      payload: {
+        newCycle,
+      },
+    })
+
     // copia todos os ciclos que já tem e adiciona o novo no final
     // sempre que uma alteração de estado depender de um valor anterior, utilizar em formato de arrow
-    setCycles((state) => [...state, newCycle])
+    // setCycles((state) => [...state, newCycle])
     // quando se cria um novo ciclo, seta o ciclo recem criado como activo
     setActiveCycleId(id)
     // para evitar o bug do timer começar nos segundos do timer anterior
@@ -84,17 +108,23 @@ export function CyclesContextProvider({
   }
 
   function interruptCurrentCycle() {
+    dispatch({
+      type: 'INTERRUPT_CURRENT_CYCLE',
+      payload: {
+        activeCycleId,
+      },
+    })
     // anota dentro do ciclo se foi interrompido, para ter no historico
-    setCycles((state) =>
-      state.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, interruptedDate: new Date() }
-        } else {
-          return cycle
-        }
-      }),
-    )
-    setActiveCycleId(null)
+    // setCycles((state) =>
+    //   state.map((cycle) => {
+    //     if (cycle.id === activeCycleId) {
+    //       return { ...cycle, interruptedDate: new Date() }
+    //     } else {
+    //       return cycle
+    //     }
+    //   }),
+    // )
+    // setActiveCycleId(null)
   }
 
   return (
