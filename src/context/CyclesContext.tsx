@@ -34,6 +34,11 @@ interface CyclesContextProviderProps {
   children: ReactNode
 }
 
+interface CyclesState {
+  cycles: Cycle[]
+  activeCycleId: string | null
+}
+
 export function CyclesContextProvider({
   children,
 }: CyclesContextProviderProps) {
@@ -44,16 +49,41 @@ export function CyclesContextProvider({
   // dispatch - metodo para disparar action e não mais alterar o valor de cycles
   // a função passada no reducer vira um ponto central, onde consigo manipular as ações realizadas
   // onde é feito a distinção através do type passado pelo dispatch e assim filtrando qual ação será realizada
-  const [cycles, dispatch] = useReducer((state: Cycle[], action: any) => {
-    if (action.type === 'ADD_NEW_CYCLE') {
-      return [...state, action.payload.newCycle]
-    }
-    return state
-  }, [])
-  // armazena os ciclos ativos
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+  const [cyclesState, dispatch] = useReducer(
+    (state: CyclesState, action: any) => {
+      if (action.type === 'ADD_NEW_CYCLE') {
+        return {
+          ...state,
+          cycles: [...state.cycles, action.payload.newCycle],
+          activeCycleId: action.payload.newCycle.id,
+        }
+      }
+      if (action.type === 'INTERRUPT_CURRENT_CYCLE') {
+        return {
+          ...state,
+          cycles: state.cycles.map((cycle) => {
+            if (cycle.id === state.activeCycleId) {
+              return { ...cycle, interruptedDate: new Date() }
+            } else {
+              return cycle
+            }
+          }),
+          activeCycleId: null,
+        }
+      }
+      return state
+    },
+    // inicialização agora é por objeto e o array vai dentro dele
+    {
+      cycles: [],
+      activeCycleId: null,
+    },
+  )
   // armazena os segundos que passaram desde que foi criado o ciclo
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
+  const { cycles, activeCycleId } = cyclesState
+  // armazena os ciclos ativos
+  // const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
 
   // percorre e procura os ciclos que estão ativos
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
@@ -102,7 +132,7 @@ export function CyclesContextProvider({
     // sempre que uma alteração de estado depender de um valor anterior, utilizar em formato de arrow
     // setCycles((state) => [...state, newCycle])
     // quando se cria um novo ciclo, seta o ciclo recem criado como activo
-    setActiveCycleId(id)
+    // setActiveCycleId(id)
     // para evitar o bug do timer começar nos segundos do timer anterior
     setAmountSecondsPassed(0)
   }
