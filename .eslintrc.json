@@ -1,3 +1,7 @@
 {
-    "extends": "@rocketseat/eslint-config/react"
+    "extends": "@rocketseat/eslint-config/react",
+    // para evitar bug no arquivo cycles com as variaveis do action types
+    "rules": {
+        "no-unused-vars": "off"
+    }
 }
