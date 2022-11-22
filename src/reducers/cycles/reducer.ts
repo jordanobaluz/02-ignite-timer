@@ -1,3 +1,5 @@
+import { ActionTypes } from './actions'
+
 // define o formato dos ciclos, que é adicionado
 export interface Cycle {
   id: string
@@ -11,13 +13,6 @@ export interface Cycle {
 interface CyclesState {
   cycles: Cycle[]
   activeCycleId: string | null
-}
-
-// define todas as actions types em um só local para dentro da função não precisar copiar e colar código
-export enum ActionTypes {
-  ADD_NEW_CYCLE = 'ADD_NEW_CYCLE',
-  INTERRUPT_CURRENT_CYCLE = 'INTERRUPT_CURRENT_CYCLE',
-  MARK_CURRENT_CYCLE_AS_FINISHED = 'MARK_CURRENT_CYCLE_AS_FINISHED',
 }
 
 export function cyclesReducer(state: CyclesState, action: any) {
