@@ -1,4 +1,5 @@
 import { ActionTypes } from './actions'
+import { produce } from 'immer'
 
 // define o formato dos ciclos, que é adicionado
 export interface Cycle {
