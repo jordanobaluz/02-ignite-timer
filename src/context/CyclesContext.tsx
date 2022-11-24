@@ -1,4 +1,11 @@
-import { createContext, ReactNode, useReducer, useState } from 'react'
+import { differenceInSeconds } from 'date-fns'
+import {
+  createContext,
+  ReactNode,
+  useEffect,
+  useReducer,
+  useState,
+} from 'react'
 import {
   ActionTypes,
   addNewCycleAction,
@@ -45,15 +52,38 @@ export function CyclesContextProvider({
       cycles: [],
       activeCycleId: null,
     },
+    () => {
+      const storedStateAsJSON = localStorage.getItem(
+        '@ignite-timer: cycles-state-1.0.0',
+      )
+      if (storedStateAsJSON) {
+        return JSON.parse(storedStateAsJSON)
+      }
+    },
   )
-  // armazena os segundos que passaram desde que foi criado o ciclo
-  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
-  const { cycles, activeCycleId } = cyclesState
-  // armazena os ciclos ativos
-  // const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
 
+  const { cycles, activeCycleId } = cyclesState
   // percorre e procura os ciclos que estão ativos
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+
+  // armazena os segundos que passaram desde que foi criado o ciclo
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(() => {
+    if (activeCycle) {
+      return differenceInSeconds(new Date(), new Date(activeCycle.startDate))
+    }
+    return 0
+  })
+
+  // irá armazenar as informações no localstorage
+  useEffect(() => {
+    const stateJSON = JSON.stringify(cyclesState)
+    // DICA -> sempre coloque um prefixo com o nome da aplicação
+    // DICA -> colocar uma versão do que está sendo salvo
+    localStorage.setItem('@ignite-timer: cycles-state-1.0.0', stateJSON)
+  }, [cyclesState])
+
+  // armazena os ciclos ativos
+  // const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
 
   function setSecondsPassed(seconds: number) {
     setAmountSecondsPassed(seconds)

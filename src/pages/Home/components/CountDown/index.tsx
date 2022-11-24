@@ -25,7 +25,8 @@ export function CountDown() {
         // usar sempre data nova no primeiro parametro
         const secondsDifference = differenceInSeconds(
           new Date(),
-          activeCycle.startDate,
+          // se startDate for uma string, converte em uma data. Se já for uma data não faz nada
+          new Date(activeCycle.startDate),
         )
         // se houver diferença é atualizado e salvo a data que foi finalizado
         if (secondsDifference >= totalSeconds) {
