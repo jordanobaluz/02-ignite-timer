@@ -1,3 +1,5 @@
+[![](https://media0.giphy.com/media/lXTOU535oow2HtYL16/giphy.gif?cid=790b7611040feb0c675a398135a8926a3092b7670517006f&rid=giphy.gif&ct=g)](https://media0.giphy.com/media/lXTOU535oow2HtYL16/giphy.gif?cid=790b7611040feb0c675a398135a8926a3092b7670517006f&rid=giphy.gif&ct=g)
+
 # Pomodoro  Ignite Timer
 Este é um projeto que simula o funcionamento do Pomodoro Timer, uma técnica de gerenciamento de tempo que consiste em dividir o trabalho em períodos de 25 minutos, intercalados por descansos de 5 minutos.
 
